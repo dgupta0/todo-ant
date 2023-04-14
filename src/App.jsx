@@ -17,7 +17,9 @@ function App() {
   console.log(data)
 
   return (
-    <h1>Ant Todo</h1>
+    <>
+      {data && <p>{JSON.stringify(data)}</p>}
+    </>
   )
 }
 
