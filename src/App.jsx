@@ -6,7 +6,7 @@ import viteLogo from '/vite.svg'
 function App() {
 
   return (
-    <h1>Basic Test</h1>
+    <h1>Ant Todo</h1>
   )
 }
 
