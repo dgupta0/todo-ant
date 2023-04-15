@@ -1,11 +1,20 @@
 import { useState } from 'react'
 import React from 'react'
-import { Table } from 'antd';
+import { Table, Tag } from 'antd';
 
 
 function App() {
   const [data, setData] = useState(null);
-  const [columns, setColumns] = useState(
+
+  React.useEffect(() => {
+    fetch("/api/todos")
+      .then(res => res.json())
+      .then(data => {
+        setData(data.todos)
+      })
+  }, [])
+
+  const columns =
     [
       {
         title: "Time Stamp",
@@ -25,30 +34,28 @@ function App() {
       {
         title: "Tags",
         dataIndex: "tags",
-        key: "tags"
+        key: "tags",
+        render: (data) => {
+          if (data !== undefined) {
+            return (
+              data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>)
+            )
+          }
+        }
       },
+
       {
         title: "Status",
         dataIndex: "status",
         key: "status"
       }
     ]
-  )
-
-  React.useEffect(() => {
-    fetch("/api/todos")
-      .then(res => res.json())
-      .then(data => {
-        console.log(data)
-        setData(data.todos)
-      })
-  }, [columns])
 
 
 
   return (
     <>
-      <Table dataSource={data} columns={columns} />
+      <Table dataSource={data} columns={columns} rowKey={"id"} />
     </>
   )
 }
