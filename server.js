@@ -19,7 +19,7 @@ createServer({
                         timeStamp: "2023-04-08",
                         title: "Write",
                         description: "write a blog",
-                        tag: ["marketing", "finance"],
+                        tags: ["marketing", "finance"],
                         status: "Open"
                     }
                 ],
