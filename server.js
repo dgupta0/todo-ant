@@ -12,6 +12,7 @@ createServer({
                         timeStamp: "2023-04-05",
                         title: "Read",
                         description: "read a book",
+                        tags: [],
                         status: "Open"
                     },
                     {

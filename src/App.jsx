@@ -35,13 +35,8 @@ function App() {
         title: "Tags",
         dataIndex: "tags",
         key: "tags",
-        render: (data) => {
-          if (data !== undefined) {
-            return (
-              data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>)
-            )
-          }
-        }
+        render: (data) =>
+          data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>)
       },
 
       {
