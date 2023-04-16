@@ -24,7 +24,12 @@ function App() {
       {
         title: "Task",
         dataIndex: "title",
-        key: "title"
+        key: "title",
+        sorter: (a, b) => {
+          console.log(a, b)
+          return a.title.localeCompare(b.title)
+
+        }
       },
       {
         title: "Description",
@@ -50,6 +55,7 @@ function App() {
         key: "status"
       }
     ]
+  console.log(columns)
 
 
 
