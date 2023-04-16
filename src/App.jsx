@@ -32,6 +32,11 @@ function App() {
         key: "description"
       },
       {
+        title: "Due Date",
+        dataIndex: "dueDate",
+        key: "dueDate"
+      },
+      {
         title: "Tags",
         dataIndex: "tags",
         key: "tags",
