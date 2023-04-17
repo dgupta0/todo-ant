@@ -39,7 +39,16 @@ function App() {
       {
         title: "Due Date",
         dataIndex: "dueDate",
-        key: "dueDate"
+        key: "dueDate",
+        sorter: function (a, b, order) {
+          if (a.dueDate === "") {
+            return order === "ascend" ? 1 : -1
+          }
+          if (b.dueDate === "") {
+            return order === "ascend" ? -1 : 1
+          }
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        }
       },
       {
         title: "Tags",
