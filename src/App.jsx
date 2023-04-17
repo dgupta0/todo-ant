@@ -61,7 +61,26 @@ function App() {
       {
         title: "Status",
         dataIndex: "status",
-        key: "status"
+        key: "status",
+        filters: [
+          {
+            text: "Open",
+            value: "Open"
+          },
+          {
+            text: "Working",
+            value: "Working"
+          },
+          {
+            text: "Done",
+            value: "Done"
+          },
+          {
+            text: "Overdue",
+            value: "Overdue"
+          }
+        ],
+        onFilter: (value, todo) => todo.status.indexOf(value) === 0,
       }
     ]
   console.log(columns)
