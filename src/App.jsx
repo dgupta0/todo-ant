@@ -10,9 +10,27 @@ function App() {
     fetch("/api/todos")
       .then(res => res.json())
       .then(data => {
+        console.log(data.todos)
         setData(data.todos)
       })
   }, [])
+
+  let onlyTags = []
+  data ? data.map(todo => {
+    for (let i = 0; i < todo.tags.length; i++) {
+      if (!onlyTags.includes(todo.tags[i])) {
+        onlyTags.push(todo.tags[i])
+      }
+    }
+  }
+  ) : null
+
+  const tagsFilter = onlyTags.map(tag => {
+    return {
+      text: tag,
+      value: tag
+    }
+  })
 
   const columns =
     [
@@ -50,12 +68,22 @@ function App() {
           return new Date(a.dueDate) - new Date(b.dueDate);
         }
       },
+
       {
         title: "Tags",
         dataIndex: "tags",
         key: "tags",
+        filters: tagsFilter,
+        onFilter: (value, todo) => {
+          for (let i = 0; i < todo.tags.length; i++) {
+            if (value === todo.tags[i]) {
+              return todo
+            }
+          }
+        },
         render: (data) =>
-          data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>)
+          data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>),
+
       },
 
       {
