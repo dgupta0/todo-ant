@@ -80,17 +80,12 @@ function App() {
             value: "Overdue"
           }
         ],
-        onFilter: (value, todo) => todo.status.indexOf(value) === 0,
+        onFilter: (value, todo) => todo.status === value
       }
     ]
-  console.log(columns)
-
-
 
   return (
-    <>
-      <Table dataSource={data} columns={columns} rowKey={"id"} />
-    </>
+    <Table dataSource={data} columns={columns} rowKey={"id"} />
   )
 }
 
