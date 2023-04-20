@@ -10,7 +10,6 @@ function App() {
     fetch("/api/todos")
       .then(res => res.json())
       .then(data => {
-        console.log(data.todos)
         setData(data.todos)
       })
   }, [])
@@ -39,7 +38,10 @@ function App() {
       {
         title: "Time Stamp",
         dataIndex: "timeStamp",
-        key: "timeStamp"
+        key: "timeStamp",
+        sorter: (a, b) => {
+          return new Date(a.timeStamp) - new Date(b.timeStamp)
+        },
       },
       {
         title: "Task",
