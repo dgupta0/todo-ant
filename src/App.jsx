@@ -16,14 +16,16 @@ function App() {
   }, [])
 
   let onlyTags = []
-  data ? data.map(todo => {
-    for (let i = 0; i < todo.tags.length; i++) {
-      if (!onlyTags.includes(todo.tags[i])) {
-        onlyTags.push(todo.tags[i])
-      }
-    }
+  if (data) {
+    data.forEach(todo => {
+      todo.tags.forEach(tag => {
+        if (!onlyTags.includes(tag)) {
+          onlyTags.push(tag)
+        }
+      })
+    })
   }
-  ) : null
+
 
   const tagsFilter = onlyTags.map(tag => {
     return {
