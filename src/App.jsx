@@ -13,41 +13,7 @@ function App() {
   // We know there are going to be only these 4 statuses
   // There is no need to get them dynamicaly from todos
   const statusFilters = ["Open", "Working", "Overdue", "Done"];
-  /* 
-  --------------------------------------------------
-  The following code can be separated into 4 parts
-  --------------------------------------------------
-  1) Create new Set, uniqueTags, to store unique tags - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
-  2) Traverse todos array and for each todo add all its tags to uniqueTags
-  3) Covert the uniqueTags Set to Array
-  4) Map each tag to the final {text, value} object
-  --------------------------------------------------
-  It could be also implemented like the code below.
-  --------------------------------------------------
-  let tagFilters = [];
-  if (todos) {
-    // 1)
-    const uniqueTags = new Set();
-    // 2)
-    todos.forEach((todo) => {
-      for (const tag of todo.tags) {
-        uniqueTags.add(tag);
-      }
-    });
-    // 3)
-    const uniqueTagsArray = Array.from(uniqueTags) // [...uniqueTags] would also work
-    // 4)
-    tagFilters = uniqueTagsArray.map((tag) => { 
-      return {
-        text: tag[0].toUpperCase() + tag.slice(1),
-        value: tag,
-      }
-    })
-  }
-  --------------------------------------------------
-  */
-  
-
+  // Tags are unknown in advance so it needs to be extracted from todos
   const tagsFilters = todos
     ? Array.from(
         todos.reduce((uniqueTags, { tags }) => {
@@ -67,16 +33,50 @@ function App() {
       title: "Timestamp created",
       dataIndex: "timeStamp",
       key: "timeStamp",
+      // This is a use of Object destructuring with assigning
+      // new names(aliases) for the original property names
+      // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#object_destructuring
+      sorter: ({timeStamp: timeStampA}, {timeStamp: timeStampB}) => (
+        new Date(timeStampA) - new Date(timeStampB)
+      ),
     },
     {
       title: "Task",
       dataIndex: "title",
       key: "title",
+      sorter: ({title: titleA}, {title: titleB}) => {
+        if (titleA === titleB) return 0;
+        return titleA > titleB ? 1 : -1
+      },
     },
     {
       title: "Description",
       dataIndex: "description",
       key: "description",
+      sorter: ({description: descA}, {description: descB}) => {
+        if (descA === descB) return 0;
+        return descA > descB ? 1 : -1
+      },
+    },
+    {
+      title: "Due Date",
+      dataIndex: "dueDate",
+      key: "dueDate",
+      sorter: ({ dueDate: dueDateA}, {dueDate: dueDateB}, order) => {
+        // both empty
+        if (dueDateA === dueDateB === "") {
+          return 0;
+        // only first empty
+        } else if (dueDateA === "") {
+          return order === "ascend" ? 1 : -1;
+        // only second empty
+        } else if (dueDateB === "") {
+          return order === "ascend" ? -1 : 1;
+        // both have values
+        } else {
+          return new Date(dueDateA) - new Date(dueDateB);
+        }
+      }
     },
     {
       title: "Tags",
