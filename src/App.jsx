@@ -1,8 +1,31 @@
 import { useState, useEffect } from "react";
-import { Table, Tag } from "antd";
+import { Table, Tag, Input } from "antd";
+const { Search } = Input;
 
 function App() {
   const [todos, setTodos] = useState([]);
+  const [searchText, setSearchText] = useState("");
+
+  const visibleTodos = searchText === "" 
+    ? todos 
+    : todos.filter(todo => {
+      const iSearchText = searchText.toLowerCase();
+      const propsToCheck = ["timeStamp", "dueDate", "tags", "status", "description", "title"];
+      let hasMatch = false;
+      // loop until match found or there is nothing left to check
+      while (!hasMatch && propsToCheck.length > 0) {
+        const prop = propsToCheck.pop();
+        const propValue = todo[prop];
+        // tags is Array and I also want to check if the tag only starts with the search value
+        if (prop === "tags") {
+          hasMatch = propValue.some(value => value.toLowerCase().startsWith(iSearchText));
+        } else {
+          hasMatch = propValue.toLowerCase().includes(iSearchText);
+        }
+      }
+
+      return hasMatch;
+    })
 
   useEffect(() => {
     fetch("/api/todos")
@@ -103,7 +126,18 @@ function App() {
     },
   ];
 
-  return <Table columns={columns} dataSource={todos} />;
+  return (
+  <>
+    <Search
+    placeholder="input search text"
+    onSearch={setSearchText}
+    onChange={({target}) => target.value === "" && setSearchText("")}
+    style={{
+      width: 300,
+    }}
+    />
+    <Table columns={columns} dataSource={visibleTodos} />
+  </>);
 }
 
 export default App;
