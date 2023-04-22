@@ -14,12 +14,34 @@ function App() {
       })
   }, [])
 
+  let onlyTags = []
+  if (data) {
+    data.forEach(todo => {
+      todo.tags.forEach(tag => {
+        if (!onlyTags.includes(tag)) {
+          onlyTags.push(tag)
+        }
+      })
+    })
+  }
+
+
+  const tagsFilter = onlyTags.map(tag => {
+    return {
+      text: tag,
+      value: tag
+    }
+  })
+
   const columns =
     [
       {
         title: "Time Stamp",
         dataIndex: "timeStamp",
-        key: "timeStamp"
+        key: "timeStamp",
+        sorter: (a, b) => {
+          return new Date(a.timeStamp) - new Date(b.timeStamp)
+        },
       },
       {
         title: "Task",
@@ -50,12 +72,22 @@ function App() {
           return new Date(a.dueDate) - new Date(b.dueDate);
         }
       },
+
       {
         title: "Tags",
         dataIndex: "tags",
         key: "tags",
+        filters: tagsFilter,
+        onFilter: (value, todo) => {
+          for (let i = 0; i < todo.tags.length; i++) {
+            if (value === todo.tags[i]) {
+              return todo
+            }
+          }
+        },
         render: (data) =>
-          data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>)
+          data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>),
+
       },
 
       {
