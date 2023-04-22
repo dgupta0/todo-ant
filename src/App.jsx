@@ -51,8 +51,11 @@ function App() {
         title: "Task",
         dataIndex: "title",
         key: "title",
+        onFilter: (filterVal, todos) => {
+          console.log("working", todos)
+        },
         sorter: (a, b) => {
-          console.log(a, b)
+
           return a.title.localeCompare(b.title)
 
         }
@@ -116,7 +119,10 @@ function App() {
             value: "Overdue"
           }
         ],
-        onFilter: (value, todo) => todo.status === value
+        onFilter: (value, todo) => {
+          console.log(todo)
+          return todo.status === value
+        }
       }
     ]
 
@@ -124,18 +130,18 @@ function App() {
     setFilterVal(e.target.value)
   }
 
-  function handleClick() {
-    console.log(filterVal)
-    setData(prev => {
-      let newTodo = []
-      prev.forEach(todo => {
-        if (todo.title.toLowerCase().includes(filterVal.toLowerCase())) {
-          newTodo.push(todo)
-        }
-      })
-      return newTodo
-    })
-  }
+  // function handleClick() {
+  //   console.log(filterVal)
+  //   setData(prev => {
+  //     let newTodo = []
+  //     prev.forEach(todo => {
+  //       if (todo.title.toLowerCase().includes(filterVal.toLowerCase())) {
+  //         newTodo.push(todo)
+  //       }
+  //     })
+  //     return newTodo
+  //   })
+  // }
 
   return (
     <>
@@ -145,8 +151,8 @@ function App() {
         allowClear
         enterButton="Search"
         size="large"
-        onChange={handleFilterVal}
-        onSearch={handleClick}
+        onChange={columns[1].onFilter}
+      // onSearch={handleClick}
       />
       {/* <Search class="search" onChange={handleFilterVal} onPressEnter={handleClick} /> */}
       <Table dataSource={data} columns={columns} rowKey={"id"} />
