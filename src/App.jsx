@@ -8,6 +8,7 @@ const { Search } = Input;
 function App() {
   const [data, setData] = useState(null);
   const [filterVal, setFilterVal] = useState("")
+  const [filteredData, setFilteredData] = useState(null);
 
 
   React.useEffect(() => {
@@ -51,13 +52,8 @@ function App() {
         title: "Task",
         dataIndex: "title",
         key: "title",
-        onFilter: (e, todo) => {
-          console.log(filterVal)
-        },
         sorter: (a, b) => {
-
           return a.title.localeCompare(b.title)
-
         }
       },
       {
@@ -129,6 +125,19 @@ function App() {
     console.log("OnChange fires")
     setFilterVal(e.target.value)
   }
+  function handleSearch() {
+    if (!filterVal) {
+      setFilteredData(data)
+    } else {
+      setFilteredData(
+        (data || []).filter(todo =>
+          todo.title.toLowerCase()
+            .includes(filterVal.toLowerCase())
+        )
+      )
+    }
+  }
+
 
   // function handleClick() {
   //   console.log(filterVal)
@@ -152,11 +161,11 @@ function App() {
         enterButton="Search"
         size="large"
         onChange={handleFilterVal}
-        onPressEnter={columns[1].onFilter}
-      // onSearch={handleClick}
+        onPressEnter={handleSearch}
+        onSearch={handleSearch}
       />
       {/* <Search class="search" onChange={handleFilterVal} onPressEnter={handleClick} /> */}
-      <Table dataSource={data} columns={columns} rowKey={"id"} />
+      <Table dataSource={filteredData || data} columns={columns} rowKey={"id"} />
     </>
 
   )
