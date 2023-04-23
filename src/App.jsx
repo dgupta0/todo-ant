@@ -51,8 +51,8 @@ function App() {
         title: "Task",
         dataIndex: "title",
         key: "title",
-        onFilter: (filterVal, todos) => {
-          console.log("working", todos)
+        onFilter: (e, todo) => {
+          console.log(filterVal)
         },
         sorter: (a, b) => {
 
@@ -120,13 +120,13 @@ function App() {
           }
         ],
         onFilter: (value, todo) => {
-          console.log(todo)
           return todo.status === value
         }
       }
     ]
 
   function handleFilterVal(e) {
+    console.log("OnChange fires")
     setFilterVal(e.target.value)
   }
 
@@ -151,7 +151,8 @@ function App() {
         allowClear
         enterButton="Search"
         size="large"
-        onChange={columns[1].onFilter}
+        onChange={handleFilterVal}
+        onPressEnter={columns[1].onFilter}
       // onSearch={handleClick}
       />
       {/* <Search class="search" onChange={handleFilterVal} onPressEnter={handleClick} /> */}
