@@ -122,35 +122,36 @@ function App() {
     ]
 
   function handleFilterVal(e) {
-    console.log("OnChange fires")
     setFilterVal(e.target.value)
   }
   function handleSearch() {
+    let props = ["title", "timeStamp", "description", "status", "dueDate", "tags"]
     if (!filterVal) {
       setFilteredData(data)
     } else {
-      setFilteredData(
-        (data || []).filter(todo =>
-          todo.title.toLowerCase()
-            .includes(filterVal.toLowerCase())
-        )
-      )
+      let filterdTodo = []
+      let filteredStr = filterVal.toLowerCase();
+
+      for (let i = 0; i < data.length; i++) {
+        debugger;
+        for (const key of props) {
+          if (key === "tags") {
+            for (const el of data[i][key]) {
+              if (el.toLowerCase().includes(filteredStr)) {
+                filterdTodo.push(data[i])
+              }
+            }
+          } else {
+            console.log(data[i][key])
+            if (data[i][key].toLowerCase().includes(filteredStr)) {
+              filterdTodo.push(data[i])
+            }
+          }
+        }
+      }
+      setFilteredData(filterdTodo)
     }
   }
-
-
-  // function handleClick() {
-  //   console.log(filterVal)
-  //   setData(prev => {
-  //     let newTodo = []
-  //     prev.forEach(todo => {
-  //       if (todo.title.toLowerCase().includes(filterVal.toLowerCase())) {
-  //         newTodo.push(todo)
-  //       }
-  //     })
-  //     return newTodo
-  //   })
-  // }
 
   return (
     <>
@@ -164,7 +165,6 @@ function App() {
         onPressEnter={handleSearch}
         onSearch={handleSearch}
       />
-      {/* <Search class="search" onChange={handleFilterVal} onPressEnter={handleClick} /> */}
       <Table dataSource={filteredData || data} columns={columns} rowKey={"id"} />
     </>
 
