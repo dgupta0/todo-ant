@@ -139,12 +139,14 @@ function App() {
             for (const el of data[i][key]) {
               if (el.toLowerCase().includes(filteredStr)) {
                 filterdTodo.push(data[i])
+                break;
               }
             }
           } else {
             console.log(data[i][key])
             if (data[i][key].toLowerCase().includes(filteredStr)) {
               filterdTodo.push(data[i])
+              break;
             }
           }
         }
