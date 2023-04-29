@@ -48,7 +48,6 @@ function App() {
         dataIndex: "title",
         key: "title",
         sorter: (a, b) => {
-          console.log(a, b)
           return a.title.localeCompare(b.title)
 
         }
@@ -88,6 +87,7 @@ function App() {
         render: (data) =>
           data.map(tag => <Tag key={tag}>{tag.toUpperCase()}</Tag>),
 
+
       },
 
       {
@@ -115,21 +115,26 @@ function App() {
         onFilter: (value, todo) => todo.status === value
       },
       {
+        dataIndex: "id",
         title: "Action",
-        render: (data) =>
-          data.map(todo =>
-            <div className='action-btn-container'>
-              <button id={`edit-${todo.id}`}
-                key={todo.id}>
-                Edit
-              </button>
-              <button id={`delete-${todo.id}`}
-                key={todo.id}>
-                Delete
-              </button>
-            </div>
-
-          )
+        render: (id) => [
+          <div className='action-btn-container'>
+            <button
+              className='edit-btn'
+              key={id}
+              id={`edit-${id}`}
+            >
+              Edit
+            </button>
+            <button
+              className='del-btn'
+              key={id}
+              id={`del-${id}`}
+            >
+              Delete
+            </button>
+          </div>
+        ]
       }
     ]
 

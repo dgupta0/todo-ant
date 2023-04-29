@@ -1,0 +1,21 @@
+.action-btn-container {
+    display: flex;
+    gap: 6px;
+}
+
+.action-btn-container button {
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    color: white;
+}
+
+.edit-btn {
+    background-color: rgb(53, 121, 53);
+
+}
+
+.del-btn {
+    background-color: rgb(162, 17, 17);
+}
