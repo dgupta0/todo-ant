@@ -113,6 +113,23 @@ function App() {
           }
         ],
         onFilter: (value, todo) => todo.status === value
+      },
+      {
+        title: "Action",
+        render: (data) =>
+          data.map(todo =>
+            <div className='action-btn-container'>
+              <button id={`edit-${todo.id}`}
+                key={todo.id}>
+                Edit
+              </button>
+              <button id={`delete-${todo.id}`}
+                key={todo.id}>
+                Delete
+              </button>
+            </div>
+
+          )
       }
     ]
 
