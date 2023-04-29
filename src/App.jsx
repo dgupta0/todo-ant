@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { Table, Tag, Input } from "antd";
+import { Button, Table, Tag, Input, Tooltip, Space } from "antd";
+import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 const { Search } = Input;
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [searchText, setSearchText] = useState("");
 
-  const visibleTodos = searchText === "" 
-    ? todos 
+  const visibleTodos = searchText === ""
+    ? todos
     : todos.filter(todo => {
       const iSearchText = searchText.toLowerCase();
       const propsToCheck = ["timeStamp", "dueDate", "tags", "status", "description", "title"];
@@ -39,17 +40,25 @@ function App() {
   // Tags are unknown in advance so it needs to be extracted from todos
   const tagsFilters = todos
     ? Array.from(
-        todos.reduce((uniqueTags, { tags }) => {
-          for (const tag of tags) {
-            uniqueTags.add(tag);
-          }
-          return uniqueTags;
-        }, new Set())
-      ).map((tag) => ({
-        text: tag[0].toUpperCase() + tag.slice(1),
-        value: tag,
-      }))
+      todos.reduce((uniqueTags, { tags }) => {
+        for (const tag of tags) {
+          uniqueTags.add(tag);
+        }
+        return uniqueTags;
+      }, new Set())
+    ).map((tag) => ({
+      text: tag[0].toUpperCase() + tag.slice(1),
+      value: tag,
+    }))
     : [];
+
+  function handleEditClick(id) {
+    console.log(id);
+  }
+
+  function handleDeleteClick(id) {
+    console.log(id);
+  }
 
   const columns = [
     {
@@ -59,7 +68,7 @@ function App() {
       // This is a use of Object destructuring with assigning
       // new names(aliases) for the original property names
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#object_destructuring
-      sorter: ({timeStamp: timeStampA}, {timeStamp: timeStampB}) => (
+      sorter: ({ timeStamp: timeStampA }, { timeStamp: timeStampB }) => (
         new Date(timeStampA) - new Date(timeStampB)
       ),
     },
@@ -67,7 +76,7 @@ function App() {
       title: "Task",
       dataIndex: "title",
       key: "title",
-      sorter: ({title: titleA}, {title: titleB}) => {
+      sorter: ({ title: titleA }, { title: titleB }) => {
         if (titleA === titleB) return 0;
         return titleA > titleB ? 1 : -1
       },
@@ -76,7 +85,7 @@ function App() {
       title: "Description",
       dataIndex: "description",
       key: "description",
-      sorter: ({description: descA}, {description: descB}) => {
+      sorter: ({ description: descA }, { description: descB }) => {
         if (descA === descB) return 0;
         return descA > descB ? 1 : -1
       },
@@ -85,17 +94,17 @@ function App() {
       title: "Due Date",
       dataIndex: "dueDate",
       key: "dueDate",
-      sorter: ({ dueDate: dueDateA}, {dueDate: dueDateB}, order) => {
+      sorter: ({ dueDate: dueDateA }, { dueDate: dueDateB }, order) => {
         // both empty
         if (dueDateA === dueDateB === "") {
           return 0;
-        // only first empty
+          // only first empty
         } else if (dueDateA === "") {
           return order === "ascend" ? 1 : -1;
-        // only second empty
+          // only second empty
         } else if (dueDateB === "") {
           return order === "ascend" ? -1 : 1;
-        // both have values
+          // both have values
         } else {
           return new Date(dueDateA) - new Date(dueDateB);
         }
@@ -124,20 +133,31 @@ function App() {
       filters: statusFilters,
       onFilter: (value, { status }) => status === value,
     },
+    {
+      title: "Actions",
+      render: (_, { id }) => {
+        return (
+          <Space direction="horizontal">
+            <Tooltip title="Edit"><Button onClick={() => handleEditClick(id)} icon={<EditOutlined />}></Button></Tooltip>
+            <Tooltip title="Delete"><Button onClick={() => handleDeleteClick(id)} icon={<DeleteOutlined />}></Button></Tooltip>
+          </Space>
+        )
+      }
+    }
   ];
 
   return (
-  <>
-    <Search
-    placeholder="input search text"
-    onSearch={setSearchText}
-    onChange={({target}) => target.value === "" && setSearchText("")}
-    style={{
-      width: 300,
-    }}
-    />
-    <Table columns={columns} dataSource={visibleTodos} />
-  </>);
+    <>
+      <Search
+        placeholder="input search text"
+        onSearch={setSearchText}
+        onChange={({ target }) => target.value === "" && setSearchText("")}
+        style={{
+          width: 300,
+        }}
+      />
+      <Table columns={columns} dataSource={visibleTodos} />
+    </>);
 }
 
 export default App;
