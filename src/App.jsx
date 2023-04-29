@@ -33,6 +33,10 @@ function App() {
     }
   })
 
+  function deleteTodo(id) {
+
+  }
+
   const columns =
     [
       {
@@ -129,6 +133,7 @@ function App() {
             <button
               className='del-btn'
               key={id}
+              onClick={() => deleteTodo(id)}
               id={`del-${id}`}
             >
               Delete
