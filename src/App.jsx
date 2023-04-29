@@ -37,7 +37,9 @@ function App() {
       value: tag
     }
   })
-
+  function deleteTodo(id) {
+    setData(data => data.filter(todo => todo.id !== id))
+  }
   const columns =
     [
       {
@@ -118,8 +120,33 @@ function App() {
         onFilter: (value, todo) => {
           return todo.status === value
         }
+      },
+      {
+        dataIndex: "id",
+        title: "Action",
+        render: (id) => [
+          <div className='action-btn-container'>
+            <button
+              className='edit-btn'
+              key={id}
+              id={`edit-${id}`}
+            >
+              Edit
+            </button>
+            <button
+              className='del-btn'
+              key={id}
+              onClick={() => deleteTodo(id)}
+              id={`del-${id}`}
+            >
+              Delete
+            </button>
+          </div>
+        ]
       }
     ]
+
+
 
   function handleFilterVal(e) {
     setFilterVal(e.target.value)
@@ -133,7 +160,6 @@ function App() {
       let filteredStr = filterVal.toLowerCase();
 
       for (let i = 0; i < data.length; i++) {
-        debugger;
         for (const key of props) {
           if (key === "tags") {
             for (const el of data[i][key]) {
