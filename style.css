@@ -1,0 +1,8 @@
+body {
+    background-color: rgb(252, 252, 252);
+}
+
+.search {
+    max-width: 500px;
+    margin: 1rem 0;
+}

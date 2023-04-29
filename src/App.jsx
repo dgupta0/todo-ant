@@ -1,10 +1,15 @@
 import { useState } from 'react'
 import React from 'react'
-import { Table, Tag } from 'antd';
+import { Table, Tag, Input } from 'antd';
 
+
+const { Search } = Input;
 
 function App() {
   const [data, setData] = useState(null);
+  const [filterVal, setFilterVal] = useState("")
+  const [filteredData, setFilteredData] = useState(null);
+
 
   React.useEffect(() => {
     fetch("/api/todos")
@@ -48,9 +53,7 @@ function App() {
         dataIndex: "title",
         key: "title",
         sorter: (a, b) => {
-          console.log(a, b)
           return a.title.localeCompare(b.title)
-
         }
       },
       {
@@ -112,12 +115,61 @@ function App() {
             value: "Overdue"
           }
         ],
-        onFilter: (value, todo) => todo.status === value
+        onFilter: (value, todo) => {
+          return todo.status === value
+        }
       }
     ]
 
+  function handleFilterVal(e) {
+    setFilterVal(e.target.value)
+  }
+  function handleSearch() {
+    let props = ["title", "timeStamp", "description", "status", "dueDate", "tags"]
+    if (!filterVal) {
+      setFilteredData(data)
+    } else {
+      let filterdTodo = []
+      let filteredStr = filterVal.toLowerCase();
+
+      for (let i = 0; i < data.length; i++) {
+        debugger;
+        for (const key of props) {
+          if (key === "tags") {
+            for (const el of data[i][key]) {
+              if (el.toLowerCase().includes(filteredStr)) {
+                filterdTodo.push(data[i])
+                break;
+              }
+            }
+          } else {
+            console.log(data[i][key])
+            if (data[i][key].toLowerCase().includes(filteredStr)) {
+              filterdTodo.push(data[i])
+              break;
+            }
+          }
+        }
+      }
+      setFilteredData(filterdTodo)
+    }
+  }
+
   return (
-    <Table dataSource={data} columns={columns} rowKey={"id"} />
+    <>
+      <Search
+        className='search'
+        placeholder="input search text"
+        allowClear
+        enterButton="Search"
+        size="large"
+        onChange={handleFilterVal}
+        onPressEnter={handleSearch}
+        onSearch={handleSearch}
+      />
+      <Table dataSource={filteredData || data} columns={columns} rowKey={"id"} />
+    </>
+
   )
 }
 
