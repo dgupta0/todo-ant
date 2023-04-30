@@ -7,31 +7,43 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [searchText, setSearchText] = useState("");
 
-  const visibleTodos = searchText === ""
-    ? todos
-    : todos.filter(todo => {
-      const iSearchText = searchText.toLowerCase();
-      const propsToCheck = ["timeStamp", "dueDate", "tags", "status", "description", "title"];
-      let hasMatch = false;
-      // loop until match found or there is nothing left to check
-      while (!hasMatch && propsToCheck.length > 0) {
-        const prop = propsToCheck.pop();
-        const propValue = todo[prop];
-        // tags is Array and I also want to check if the tag only starts with the search value
-        if (prop === "tags") {
-          hasMatch = propValue.some(value => value.toLowerCase().startsWith(iSearchText));
-        } else {
-          hasMatch = propValue.toLowerCase().includes(iSearchText);
-        }
-      }
+  const visibleTodos =
+    searchText === ""
+      ? todos
+      : todos.filter((todo) => {
+          const iSearchText = searchText.toLowerCase();
+          const propsToCheck = [
+            "timeStamp",
+            "dueDate",
+            "tags",
+            "status",
+            "description",
+            "title",
+          ];
+          let hasMatch = false;
+          // loop until match found or there is nothing left to check
+          while (!hasMatch && propsToCheck.length > 0) {
+            const prop = propsToCheck.pop();
+            const propValue = todo[prop];
+            // tags is Array and I also want to check if the tag only starts with the search value
+            if (prop === "tags") {
+              hasMatch = propValue.some((value) =>
+                value.toLowerCase().startsWith(iSearchText)
+              );
+            } else {
+              hasMatch = propValue.toLowerCase().includes(iSearchText);
+            }
+          }
 
-      return hasMatch;
-    })
+          return hasMatch;
+        });
 
   useEffect(() => {
     fetch("/api/todos")
       .then((res) => res.json())
-      .then(data => { setTodos(data.todos); });
+      .then((data) => {
+        setTodos(data.todos);
+      });
   }, []);
 
   // We know there are going to be only these 4 statuses
@@ -40,24 +52,30 @@ function App() {
   // Tags are unknown in advance so it needs to be extracted from todos
   const tagsFilters = todos
     ? Array.from(
-      todos.reduce((uniqueTags, { tags }) => {
-        for (const tag of tags) {
-          uniqueTags.add(tag);
-        }
-        return uniqueTags;
-      }, new Set())
-    ).map((tag) => ({
-      text: tag[0].toUpperCase() + tag.slice(1),
-      value: tag,
-    }))
+        todos.reduce((uniqueTags, { tags }) => {
+          for (const tag of tags) {
+            uniqueTags.add(tag);
+          }
+          return uniqueTags;
+        }, new Set())
+      ).map((tag) => ({
+        text: tag[0].toUpperCase() + tag.slice(1),
+        value: tag,
+      }))
     : [];
 
-  function handleEditClick(id) {
-    console.log(id);
+  function handleEditClick(e, id) {
+    console.log("edit: " + id);
   }
 
-  function handleDeleteClick(id) {
-    console.log(id);
+  function handleDeleteClick(e, id) {
+    console.log("delete: " + id);
+    fetch("/api/todos/" + id, {
+      method: "DELETE",
+    }).then((res) => {
+      if (!res.ok) return;
+      setTodos(todos.filter((todo) => todo.id !== id));
+    });
   }
 
   const columns = [
@@ -68,9 +86,8 @@ function App() {
       // This is a use of Object destructuring with assigning
       // new names(aliases) for the original property names
       // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#object_destructuring
-      sorter: ({ timeStamp: timeStampA }, { timeStamp: timeStampB }) => (
-        new Date(timeStampA) - new Date(timeStampB)
-      ),
+      sorter: ({ timeStamp: timeStampA }, { timeStamp: timeStampB }) =>
+        new Date(timeStampA) - new Date(timeStampB),
     },
     {
       title: "Task",
@@ -78,7 +95,7 @@ function App() {
       key: "title",
       sorter: ({ title: titleA }, { title: titleB }) => {
         if (titleA === titleB) return 0;
-        return titleA > titleB ? 1 : -1
+        return titleA > titleB ? 1 : -1;
       },
     },
     {
@@ -87,7 +104,7 @@ function App() {
       key: "description",
       sorter: ({ description: descA }, { description: descB }) => {
         if (descA === descB) return 0;
-        return descA > descB ? 1 : -1
+        return descA > descB ? 1 : -1;
       },
     },
     {
@@ -96,7 +113,7 @@ function App() {
       key: "dueDate",
       sorter: ({ dueDate: dueDateA }, { dueDate: dueDateB }, order) => {
         // both empty
-        if (dueDateA === dueDateB === "") {
+        if ((dueDateA === dueDateB) === "") {
           return 0;
           // only first empty
         } else if (dueDateA === "") {
@@ -108,7 +125,7 @@ function App() {
         } else {
           return new Date(dueDateA) - new Date(dueDateB);
         }
-      }
+      },
     },
     {
       title: "Tags",
@@ -138,12 +155,22 @@ function App() {
       render: (_, { id }) => {
         return (
           <Space direction="horizontal">
-            <Tooltip title="Edit"><Button onClick={() => handleEditClick(id)} icon={<EditOutlined />}></Button></Tooltip>
-            <Tooltip title="Delete"><Button onClick={() => handleDeleteClick(id)} icon={<DeleteOutlined />}></Button></Tooltip>
+            <Tooltip title="Edit" mouseEnterDelay={0.5}>
+              <Button
+                onClick={(e) => handleEditClick(e, id)}
+                icon={<EditOutlined />}
+              ></Button>
+            </Tooltip>
+            <Tooltip title="Delete" mouseEnterDelay={0.5}>
+              <Button
+                onClick={(e) => handleDeleteClick(e, id)}
+                icon={<DeleteOutlined />}
+              ></Button>
+            </Tooltip>
           </Space>
-        )
-      }
-    }
+        );
+      },
+    },
   ];
 
   return (
@@ -157,7 +184,8 @@ function App() {
         }}
       />
       <Table columns={columns} dataSource={visibleTodos} />
-    </>);
+    </>
+  );
 }
 
 export default App;
