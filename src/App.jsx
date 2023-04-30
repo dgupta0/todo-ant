@@ -3,9 +3,16 @@ import { Button, Table, Tag, Input, Tooltip, Space } from "antd";
 import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
 const { Search } = Input;
 
+const TO_BE_CONFIRMED = 0;
+const AWAITING_RESPONSE = 1;
+
 function App() {
   const [todos, setTodos] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [action, setAction] = useState({
+    id: null,
+    state: null,
+  });
 
   const visibleTodos =
     searchText === ""
@@ -64,16 +71,42 @@ function App() {
       }))
     : [];
 
-  function handleEditClick(e, id) {
+  function handleEditClick(id) {
     console.log("edit: " + id);
   }
 
-  function handleDeleteClick(e, id) {
+  function handleDeleteClick(id) {
     console.log("delete: " + id);
+    
+    const { state, id: actionId } = action;
+
+    if ( state === null || actionId !== id ) {
+      setAction({
+        id: id,
+        state: TO_BE_CONFIRMED,
+      });
+    } else if ( state === TO_BE_CONFIRMED && actionId === id ) {
+      deleteTodo();
+    }
+  }  
+
+  function resetAction() {
+    setAction({ id: null, state: null });
+  }
+
+  function deleteTodo() {
+    const { id } = action;
+
+    setAction(prev => ({
+      ...prev,
+      state: AWAITING_RESPONSE, 
+    }))
+    
     fetch("/api/todos/" + id, {
       method: "DELETE",
     }).then((res) => {
       if (!res.ok) return;
+      resetAction();
       setTodos(todos.filter((todo) => todo.id !== id));
     });
   }
@@ -153,18 +186,23 @@ function App() {
     {
       title: "Actions",
       render: (_, { id }) => {
+        const isAwaitingResponse = action.id === id && action.state === AWAITING_RESPONSE;
+        const isToBeConfirmed = action.id === id && action.state === TO_BE_CONFIRMED;
+        
         return (
           <Space direction="horizontal">
             <Tooltip title="Edit" mouseEnterDelay={0.5}>
               <Button
-                onClick={(e) => handleEditClick(e, id)}
+                onClick={() => handleEditClick(id)}
                 icon={<EditOutlined />}
               ></Button>
             </Tooltip>
             <Tooltip title="Delete" mouseEnterDelay={0.5}>
               <Button
-                onClick={(e) => handleDeleteClick(e, id)}
+                onClick={() => handleDeleteClick(id)}
                 icon={<DeleteOutlined />}
+                loading={isAwaitingResponse}
+                danger={isAwaitingResponse || isToBeConfirmed}
               ></Button>
             </Tooltip>
           </Space>
