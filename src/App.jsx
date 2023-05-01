@@ -8,7 +8,34 @@ const { Search } = Input;
 function App() {
   const [data, setData] = useState(null);
   const [filterVal, setFilterVal] = useState("")
-  const [filteredData, setFilteredData] = useState(null);
+  // const [filteredData, setFilteredData] = useState(null);
+
+  let visibleData = data;
+  let props = ["title", "timeStamp", "description", "status", "dueDate", "tags"]
+  if (filterVal) {
+    let filterdTodo = []
+    let filteredStr = filterVal.toLowerCase();
+
+    for (let i = 0; i < data.length; i++) {
+      for (const key of props) {
+        if (key === "tags") {
+          for (const el of data[i][key]) {
+            if (el.toLowerCase().includes(filteredStr)) {
+              filterdTodo.push(data[i])
+              break;
+            }
+          }
+        } else {
+          console.log(data[i][key])
+          if (data[i][key].toLowerCase().includes(filteredStr)) {
+            filterdTodo.push(data[i])
+            break;
+          }
+        }
+      }
+    }
+    visibleData = filterdTodo
+  }
 
 
   React.useEffect(() => {
@@ -38,7 +65,14 @@ function App() {
     }
   })
   function deleteTodo(id) {
-    setData(data => data.filter(todo => todo.id !== id))
+    fetch(`/api/todos/${id}`, { method: "delete" })
+      .then(res => res.json())
+      .then(data => {
+        setData(data => data.filter(todo => todo.id !== id))
+      }
+
+      )
+
   }
   const columns =
     [
@@ -124,25 +158,25 @@ function App() {
       {
         dataIndex: "id",
         title: "Action",
-        render: (id) => [
+        render: (id) =>
           <div className='action-btn-container'>
             <button
               className='edit-btn'
-              key={id}
+              key={`edit-${id}`}
               id={`edit-${id}`}
             >
               Edit
             </button>
             <button
               className='del-btn'
-              key={id}
+              key={`del-${id}`}
               onClick={() => deleteTodo(id)}
               id={`del-${id}`}
             >
               Delete
             </button>
           </div>
-        ]
+
       }
     ]
 
@@ -151,35 +185,6 @@ function App() {
   function handleFilterVal(e) {
     setFilterVal(e.target.value)
   }
-  function handleSearch() {
-    let props = ["title", "timeStamp", "description", "status", "dueDate", "tags"]
-    if (!filterVal) {
-      setFilteredData(data)
-    } else {
-      let filterdTodo = []
-      let filteredStr = filterVal.toLowerCase();
-
-      for (let i = 0; i < data.length; i++) {
-        for (const key of props) {
-          if (key === "tags") {
-            for (const el of data[i][key]) {
-              if (el.toLowerCase().includes(filteredStr)) {
-                filterdTodo.push(data[i])
-                break;
-              }
-            }
-          } else {
-            console.log(data[i][key])
-            if (data[i][key].toLowerCase().includes(filteredStr)) {
-              filterdTodo.push(data[i])
-              break;
-            }
-          }
-        }
-      }
-      setFilteredData(filterdTodo)
-    }
-  }
 
   return (
     <>
@@ -187,13 +192,10 @@ function App() {
         className='search'
         placeholder="input search text"
         allowClear
-        enterButton="Search"
         size="large"
         onChange={handleFilterVal}
-        onPressEnter={handleSearch}
-        onSearch={handleSearch}
       />
-      <Table dataSource={filteredData || data} columns={columns} rowKey={"id"} />
+      <Table dataSource={visibleData} columns={columns} rowKey={"id"} />
     </>
 
   )

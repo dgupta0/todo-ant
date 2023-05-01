@@ -208,5 +208,9 @@ createServer({
                 ],
             }
         })
+        this.delete("/todos/:id", (schema, request) => {
+            let id = request.params.id
+            return schema.reminders.find(id).destroy()
+        })
     },
 })
