@@ -10,6 +10,28 @@ function App() {
   const [filterVal, setFilterVal] = useState("")
   // const [filteredData, setFilteredData] = useState(null);
 
+  React.useEffect(() => {
+    fetch("/api/todos", { method: "GET" })
+      .then(res => {
+        console.log(res)
+        return res.json()
+      })
+      .then(data => {
+        setData(data.todos)
+      })
+  }, [])
+
+
+  function deleteTodo(id) {
+    fetch(`/api/todos/${id}`, { method: "delete" })
+      .then(res => res.json())
+      .then(data => {
+        setData(data => data.filter(todo => todo.id !== id))
+      })
+  }
+
+
+  // below is the code for filtering data by user search.
   let visibleData = data;
   let props = ["title", "timeStamp", "description", "status", "dueDate", "tags"]
   if (filterVal) {
@@ -37,15 +59,7 @@ function App() {
     visibleData = filterdTodo
   }
 
-
-  React.useEffect(() => {
-    fetch("/api/todos")
-      .then(res => res.json())
-      .then(data => {
-        setData(data.todos)
-      })
-  }, [])
-
+  // creating an array of total tag names used by users. 
   let onlyTags = []
   if (data) {
     data.forEach(todo => {
@@ -57,23 +71,14 @@ function App() {
     })
   }
 
-
+  // coverting the tags array into antd filter format
   const tagsFilter = onlyTags.map(tag => {
     return {
       text: tag,
       value: tag
     }
   })
-  function deleteTodo(id) {
-    fetch(`/api/todos/${id}`, { method: "delete" })
-      .then(res => res.json())
-      .then(data => {
-        setData(data => data.filter(todo => todo.id !== id))
-      }
 
-      )
-
-  }
   const columns =
     [
       {

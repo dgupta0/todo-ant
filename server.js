@@ -1,11 +1,15 @@
-import { createServer } from "miragejs"
 
-createServer({
-    routes() {
-        this.namespace = "api"
+import { createServer, Model } from "miragejs"
 
-        this.get("/todos", () => {
-            return {
+export default function () {
+    createServer({
+        models: {
+            todos: Model,
+        },
+
+        routes() {
+            this.namespace = "api";
+            this.get("/todos", () => ({
                 todos: [
                     {
                         id: 1,
@@ -206,11 +210,12 @@ createServer({
                     }
 
                 ],
-            }
-        })
-        this.delete("/todos/:id", (schema, request) => {
-            let id = request.params.id
-            return schema.todos.find(id).destroy()
-        })
-    },
-})
+            }))
+            this.delete("/todos/:id", (schema, request) => {
+                let id = request.params.id
+                return schema.todos.find(id).destroy()
+            })
+        }
+    })
+}
+
