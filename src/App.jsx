@@ -225,13 +225,17 @@ function App() {
         tags: todo.tags
       }
     })
-    setData(data => {
-      return [
-        ...data,
-        todo
-      ]
-    })
-    console.log(data)
+
+    fetch(`/api/todos/`, { method: "POST" })
+      .then(res => res.json())
+      .then(data => {
+        setData(data => {
+          return [
+            ...data,
+            todo
+          ]
+        })
+      })
 
     setTodo({
       id: id,
