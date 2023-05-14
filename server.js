@@ -223,6 +223,7 @@ export default function () {
             }),
 
                 this.post("/todos", (schema, request) => {
+                    console.log("schema: ", schema, "req: ", request)
                     let attrs = JSON.parse(request.requestBody)
                     attrs.id = newId++
                     todos.push(attrs)

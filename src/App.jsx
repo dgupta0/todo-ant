@@ -17,7 +17,6 @@ function App() {
   React.useEffect(() => {
     fetch("/api/todos", { method: "GET" })
       .then(res => {
-        console.log(res)
         return res.json()
       })
       .then(data => {
@@ -226,7 +225,7 @@ function App() {
       }
     })
 
-    fetch(`/api/todos/`, { method: "POST" })
+    fetch(`/api/todos`, { method: "POST", body: JSON.stringify(todo) })
       .then(res => res.json())
       .then(data => {
         setData(data => {
