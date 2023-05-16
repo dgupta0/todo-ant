@@ -23,7 +23,8 @@ function App() {
   const [todos, setTodos] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [modalOpened, setModalOpened] = useState(false);
-  const [statusOption, setStatusOption] = useState("Open");
+  const [form] = Form.useForm();
+  const [formLoading, setFormLoading] = useState(false);
   const [action, setAction] = useState({
     id: null,
     state: null,
@@ -234,6 +235,49 @@ function App() {
     },
   ];
 
+  const onFinish = async ({ title, description, tags, status, dateRange }) => {
+    const todo = {
+      title,
+      description,
+      status,
+    };
+
+    todo.tags =
+      tags
+        ?.trim()
+        .split("#")
+        .filter((v) => !!v)
+        .map((tag) => tag.trim()) ?? [];
+    todo.timeStamp = dateRange[0].format("YYYY-MM-DD");
+    todo.dueDate = dateRange[1]?.format("YYYY-MM-DD") ?? "";
+
+    console.log(todo);
+
+    const options = {
+      method: "POST",
+      body: JSON.stringify(todo),
+    };
+
+    setFormLoading(true);
+
+    const response = await fetch("/api/todos", options);
+
+    if (response.ok) {
+      form.resetFields();
+
+      const newTodo = await response.json();
+
+      setTodos((prevTodos) => ([
+        ...prevTodos,
+        newTodo,
+      ]));
+    } else {
+      console.log("ERROR POSTING TODO");
+    }
+
+    setFormLoading(false);
+  };
+
   return (
     <>
       <Space.Compact block size="middle">
@@ -259,9 +303,11 @@ function App() {
         open={modalOpened}
         onCancel={handleModalCancel}
         title="Create new todo"
+        footer={null}
       >
         <Space direction="vertical" align="center">
           <Form
+            form={form}
             name="create"
             labelCol={{
               span: 8,
@@ -274,10 +320,11 @@ function App() {
             }}
             initialValues={{
               remember: true,
-              duedate: [dayjs(), null],
+              dateRange: [dayjs(), null],
               status: "Open",
             }}
             autoComplete="off"
+            onFinish={onFinish}
           >
             <Form.Item
               label="Task"
@@ -292,14 +339,11 @@ function App() {
               <Input />
             </Form.Item>
 
-            <Form.Item
-              label="Description"
-              name="description"
-            >
+            <Form.Item label="Description" name="description">
               <Input />
             </Form.Item>
 
-            <Form.Item label="Due Date" name="duedate">
+            <Form.Item label="Due Date" name="dateRange">
               <DatePicker.RangePicker disabled={[true, false]} />
             </Form.Item>
 
@@ -330,6 +374,12 @@ function App() {
                 span: 16,
               }}
             ></Form.Item>
+
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="primary" htmlType="submit" loading={formLoading}>
+                Create
+              </Button>
+            </Form.Item>
           </Form>
         </Space>
       </Modal>

@@ -2,6 +2,8 @@ import { createServer, Model, Response } from "miragejs";
 import todos from "./todos";
 
 export default function () {
+  let nextTodoIdentifier = 21;
+
   createServer({
     models: {
       todos: Model,
@@ -27,9 +29,27 @@ export default function () {
         try {
           schema.todos.find(id).destroy();
         } catch (error) {
-          return new Response(400, {}, { error: `Todo with id #${id} could not be deleted.`});
+          return new Response(
+            400,
+            {},
+            { error: `Todo with id #${id} could not be deleted.` }
+          );
         }
         return new Response(204);
+      });
+
+      this.post("/todos", (schema, request) => {
+        const todo = JSON.parse(request.requestBody);
+
+        try {
+          if (!todo.title) throw new Error("Todo has no title");
+          todo.id = nextTodoIdentifier++;
+          schema.todos.create(todo);
+        } catch (error) {
+          return new Response(400, {}, { error: error });
+        }
+
+        return new Response(200, {}, todo);
       });
     },
   });
