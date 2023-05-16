@@ -1,4 +1,4 @@
-import { createServer, Model } from "miragejs";
+import { createServer, Model, Response } from "miragejs";
 import todos from "./todos";
 
 export default function () {
@@ -24,8 +24,12 @@ export default function () {
 
       this.delete("/todos/:id", (schema, request) => {
         let id = request.params.id;
-
-        return schema.todos.find(id).destroy();
+        try {
+          schema.todos.find(id).destroy();
+        } catch (error) {
+          return new Response(400, {}, { error: `Todo with id #${id} could not be deleted.`});
+        }
+        return new Response(204);
       });
     },
   });

@@ -1,6 +1,19 @@
 import { useState, useEffect } from "react";
-import { Button, Table, Tag, Input, Tooltip, Space } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  Button,
+  Table,
+  Tag,
+  Input,
+  Tooltip,
+  Space,
+  Modal,
+  Form,
+  DatePicker,
+  Mentions,
+  Radio,
+} from "antd";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import dayjs from "dayjs";
 const { Search } = Input;
 
 const TO_BE_CONFIRMED = 0;
@@ -9,6 +22,8 @@ const AWAITING_RESPONSE = 1;
 function App() {
   const [todos, setTodos] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [modalOpened, setModalOpened] = useState(false);
+  const [statusOption, setStatusOption] = useState("Open");
   const [action, setAction] = useState({
     id: null,
     state: null,
@@ -71,24 +86,30 @@ function App() {
       }))
     : [];
 
+  function handleCreateClick() {
+    setModalOpened(true);
+  }
+
+  function handleModalCancel() {
+    setModalOpened(false);
+  }
+
   function handleEditClick(id) {
     console.log("edit: " + id);
   }
 
   function handleDeleteClick(id) {
-    console.log("delete: " + id);
-    
     const { state, id: actionId } = action;
 
-    if ( state === null || actionId !== id ) {
+    if (state === null || actionId !== id) {
       setAction({
         id: id,
         state: TO_BE_CONFIRMED,
       });
-    } else if ( state === TO_BE_CONFIRMED && actionId === id ) {
+    } else if (state === TO_BE_CONFIRMED && actionId === id) {
       deleteTodo();
     }
-  }  
+  }
 
   function resetAction() {
     setAction({ id: null, state: null });
@@ -97,11 +118,11 @@ function App() {
   function deleteTodo() {
     const { id } = action;
 
-    setAction(prev => ({
+    setAction((prev) => ({
       ...prev,
-      state: AWAITING_RESPONSE, 
-    }))
-    
+      state: AWAITING_RESPONSE,
+    }));
+
     fetch("/api/todos/" + id, {
       method: "DELETE",
     }).then((res) => {
@@ -186,9 +207,11 @@ function App() {
     {
       title: "Actions",
       render: (_, { id }) => {
-        const isAwaitingResponse = action.id === id && action.state === AWAITING_RESPONSE;
-        const isToBeConfirmed = action.id === id && action.state === TO_BE_CONFIRMED;
-        
+        const isAwaitingResponse =
+          action.id === id && action.state === AWAITING_RESPONSE;
+        const isToBeConfirmed =
+          action.id === id && action.state === TO_BE_CONFIRMED;
+
         return (
           <Space direction="horizontal">
             <Tooltip title="Edit" mouseEnterDelay={0.5}>
@@ -213,15 +236,103 @@ function App() {
 
   return (
     <>
-      <Search
-        placeholder="input search text"
-        onSearch={setSearchText}
-        onChange={({ target }) => target.value === "" && setSearchText("")}
-        style={{
-          width: 300,
-        }}
-      />
+      <Space.Compact block size="middle">
+        <Search
+          placeholder="input search text"
+          onSearch={setSearchText}
+          onChange={({ target }) => target.value === "" && setSearchText("")}
+          style={{
+            width: 300,
+          }}
+        />
+        <Button
+          type="default"
+          icon={<PlusOutlined />}
+          size="middle"
+          onClick={handleCreateClick}
+        >
+          Create
+        </Button>
+      </Space.Compact>
       <Table columns={columns} dataSource={visibleTodos} />
+      <Modal
+        open={modalOpened}
+        onCancel={handleModalCancel}
+        title="Create new todo"
+      >
+        <Space direction="vertical" align="center">
+          <Form
+            name="create"
+            labelCol={{
+              span: 8,
+            }}
+            wrapperCol={{
+              span: 16,
+            }}
+            style={{
+              width: "100%",
+            }}
+            initialValues={{
+              remember: true,
+              duedate: [dayjs(), null],
+              status: "Open",
+            }}
+            autoComplete="off"
+          >
+            <Form.Item
+              label="Task"
+              name="title"
+              rules={[
+                {
+                  required: true,
+                  message: "Please input todo's title!",
+                },
+              ]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Description"
+              name="description"
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item label="Due Date" name="duedate">
+              <DatePicker.RangePicker disabled={[true, false]} />
+            </Form.Item>
+
+            <Form.Item label="Tags" name="tags">
+              <Mentions
+                placeholder="input # to mention tag"
+                prefix={["#"]}
+                options={(tagsFilters || []).map(({ value }) => ({
+                  key: value,
+                  value,
+                  label: value,
+                }))}
+              />
+            </Form.Item>
+
+            <Form.Item label="Status" name="status">
+              <Radio.Group
+                options={["Open", "Working"]}
+                // onChange={({ target: { value } }) => setStatusOption(value)}
+                optionType="button"
+                buttonStyle="solid"
+              />
+            </Form.Item>
+
+            <Form.Item
+              wrapperCol={{
+                offset: 8,
+                span: 16,
+              }}
+            ></Form.Item>
+          </Form>
+        </Space>
+      </Modal>
     </>
   );
 }
