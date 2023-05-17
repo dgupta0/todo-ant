@@ -11,6 +11,7 @@ function App() {
   const [filterVal, setFilterVal] = useState("")
   const [todoClicked, setTodoClicked] = useState(false)
   const [id, setId] = useState(null)
+  const [isEditClicked, setIsEditClicked] = useState(false)
 
   // const [filteredData, setFilteredData] = useState(null);
 
@@ -182,6 +183,7 @@ function App() {
               className='edit-btn'
               key={`edit-${id}`}
               id={`edit-${id}`}
+              onClick={() => handleEdit(id)}
             >
               Edit
             </button>
@@ -206,47 +208,76 @@ function App() {
 
   function handleForm(e) {
     const { name, value } = e.target
-    setTodo(todo => {
-      return {
-        ...todo,
-        id: id,
-        [name]: value
-      }
-    })
+    if (setIsEditClicked) {
+      setTodo(todo => {
+        return {
+          ...todo,
+          [name]: value
+        }
+      })
+    }
+    else {
+      setTodo(todo => {
+        return {
+          ...todo,
+          id: id,
+          [name]: value
+        }
+      })
+    }
+
+  }
+  function handleEdit(id) {
+    setTodoClicked(true)
+    setIsEditClicked(true)
+    let editTodo = data.filter(todo => todo.id === id)
+    setTodo(...editTodo)
   }
 
-
   function handleDone() {
-    todo.tags = todo.tags ? todo.tags.split(",") : []
-    setTodo(todo => {
-      return {
-        ...todo,
-        tags: todo.tags
-      }
-    })
-
-    fetch(`/api/todos`, { method: "POST", body: JSON.stringify(todo) })
-      .then(res => res.json())
-      .then(data => {
-        setData(data => {
-          return [
-            ...data,
-            todo
-          ]
-        })
+    if (isEditClicked) {
+      setData(data => {
+        let newArr = [...data]
+        for (let i = 0; i < newArr.length; i++) {
+          if (newArr[i].id === todo.id) {
+            newArr[i] = { ...todo }
+          }
+        }
+        return newArr
+      })
+    }
+    else {
+      todo.tags = todo.tags ? todo.tags.split(",") : []
+      setTodo(todo => {
+        return {
+          ...todo,
+          tags: todo.tags
+        }
       })
 
-    setTodo({
-      id: id,
-      timeStamp: dt,
-      description: "",
-      dueDate: "",
-      tags: [],
-      status: ""
-    })
-    setId(data.length + 1)
-    setTodoClicked(false)
 
+      fetch(`/api/todos`, { method: "POST", body: JSON.stringify(todo) })
+        .then(res => res.json())
+        .then(data => {
+          setData(data => {
+            return [
+              ...data,
+              todo
+            ]
+          })
+        })
+      setId(data.length + 1)
+    }
+
+
+    setTodo({})
+    setTodoClicked(false)
+    setIsEditClicked(false)
+
+  }
+  function handleFormCloseBtn() {
+    setTodoClicked(false)
+    setIsEditClicked(false)
   }
 
   return (
@@ -254,14 +285,14 @@ function App() {
       {todoClicked &&
         <div className='form-container'>
           <form>
-            <h2>Add Todo Item</h2>
+            <h2>{isEditClicked ? "Edit" : "Add"} Todo Item </h2>
             <input
               type="text"
               name="title"
               id="title"
               placeholder='Title'
               onChange={handleForm}
-              value={todo.task}
+              value={todo.title}
             />
             <input
               type="text"
@@ -274,7 +305,7 @@ function App() {
               type="date"
               name="dueDate"
               id="dueDate"
-              value={todo.date}
+              value={todo.dueDate}
               onChange={handleForm}
               placeholder='due date' />
             <input
@@ -292,6 +323,7 @@ function App() {
                 id="open"
                 value="Open"
                 onChange={handleForm}
+                checked={todo.status === "Open"}
               />
               <label for="open">Open</label> <br />
               <input
@@ -300,6 +332,7 @@ function App() {
                 id="close"
                 value="Close"
                 onChange={handleForm}
+                checked={todo.status === "Close"}
               />
               <label for="close">Close</label> <br />
               <input
@@ -307,6 +340,7 @@ function App() {
                 name="status"
                 id="working"
                 value="Working"
+                checked={todo.status === "Working"}
                 onChange={handleForm}
               />
               <label for="working">Working</label> <br />
@@ -316,12 +350,13 @@ function App() {
                 id="overdue"
                 value="Overdue"
                 onChange={handleForm}
+                checked={todo.status === "Overdue"}
               />
               <label for="overdue">Overdue</label> <br />
             </div>
             <div className='form-btns'>
-              <button type='button' id="form-done" onClick={handleDone} >Done</button>
-              <button type='button' id="form-close" onClick={() => setTodoClicked(false)}>Close</button>
+              <button type='button' id="form-done" onClick={handleDone}>Done</button>
+              <button type='button' id="form-close" onClick={handleFormCloseBtn}>Close</button>
             </div>
 
 
