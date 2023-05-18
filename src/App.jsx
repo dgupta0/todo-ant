@@ -26,15 +26,7 @@ function App() {
       })
   }, [])
 
-  const [todo, setTodo] = useState({
-    id: id,
-    title: "",
-    timeStamp: dt,
-    description: "",
-    dueDate: "",
-    tags: "",
-    status: ""
-  })
+  const [todo, setTodo] = useState(null)
 
   function deleteTodo(id) {
     fetch(`/api/todos/${id}`, { method: "delete" })
@@ -212,7 +204,8 @@ function App() {
       setTodo(todo => {
         return {
           ...todo,
-          [name]: value
+          [name]: [name] === "tags" ? todo.tags.join(",") : value
+
         }
       })
     }
@@ -227,54 +220,64 @@ function App() {
     }
 
   }
-  function handleEdit(id) {
+  function handleAddBtn() {
     setTodoClicked(true)
+    setTodo({
+      id: id,
+      title: "",
+      timeStamp: dt,
+      description: "",
+      dueDate: "",
+      tags: "",
+      status: ""
+    })
+  }
+  function handleEdit(id) {
     setIsEditClicked(true)
+    setTodoClicked(true)
     let editTodo = data.filter(todo => todo.id === id)
     setTodo(...editTodo)
   }
 
   function handleDone() {
-    if (isEditClicked) {
-      setData(data => {
-        let newArr = [...data]
-        for (let i = 0; i < newArr.length; i++) {
-          if (newArr[i].id === todo.id) {
-            newArr[i] = { ...todo }
-          }
-        }
-        return newArr
-      })
-    }
-    else {
-      todo.tags = todo.tags ? todo.tags.split(",") : []
+    if (todo.title && todo.description && todo.status) {
+      todo.tags = todo.tags.length ? todo.tags.split(",") : []
       setTodo(todo => {
         return {
           ...todo,
           tags: todo.tags
         }
       })
-
-
-      fetch(`/api/todos`, { method: "POST", body: JSON.stringify(todo) })
-        .then(res => res.json())
-        .then(data => {
-          setData(data => {
-            return [
-              ...data,
-              todo
-            ]
-          })
+      if (isEditClicked) {
+        setData(data => {
+          let newArr = [...data]
+          for (let i = 0; i < newArr.length; i++) {
+            if (newArr[i].id === todo.id) {
+              newArr[i] = { ...todo }
+            }
+          }
+          return newArr
         })
-      setId(data.length + 1)
+      }
+
+      else {
+        fetch(`/api/todos`, { method: "POST", body: JSON.stringify(todo) })
+          .then(res => res.json())
+          .then(data => {
+            setData(data => {
+              return [
+                ...data,
+                todo
+              ]
+            })
+          })
+        setId(data.length + 1)
+      }
+      setTodoClicked(false)
+      setIsEditClicked(false)
     }
-
-
-    setTodo({})
-    setTodoClicked(false)
-    setIsEditClicked(false)
-
   }
+
   function handleFormCloseBtn() {
     setTodoClicked(false)
     setIsEditClicked(false)
@@ -364,7 +367,7 @@ function App() {
         </div>
       }
       <header>
-        <button className='add' id='add' onClick={() => setTodoClicked(true)}>Add Todo + </button>
+        <button className='add' id='add' onClick={handleAddBtn}>Add Todo + </button>
         <Search
           className='search'
           placeholder="input search text"
