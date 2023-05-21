@@ -220,7 +220,6 @@ export default function () {
                 return {
                     todos: schema.todos.all().models
                 }
-
             }),
 
                 this.post("/todos", (schema, request) => {
@@ -232,8 +231,6 @@ export default function () {
                     return { reminder: attrs }
                 })
 
-            })
-
             this.delete("/todos/:id", (schema, request) => {
                 let id = request.params.id
                 return schema.todos.find(id).destroy()
@@ -241,3 +238,4 @@ export default function () {
         }
     })
 }
+           
