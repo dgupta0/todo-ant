@@ -6,21 +6,27 @@ import { Table, Tag, Input } from 'antd';
 const { Search } = Input;
 
 function App() {
+  let dt = new Date().toISOString().slice(0, 10);
   const [data, setData] = useState(null);
   const [filterVal, setFilterVal] = useState("")
+  const [todoClicked, setTodoClicked] = useState(false)
+  const [id, setId] = useState(null)
+  const [isEditClicked, setIsEditClicked] = useState(false)
+
   // const [filteredData, setFilteredData] = useState(null);
 
   React.useEffect(() => {
     fetch("/api/todos", { method: "GET" })
       .then(res => {
-        console.log(res)
         return res.json()
       })
       .then(data => {
         setData(data.todos)
+        setId(data.todos.length + 1)
       })
   }, [])
 
+  const [todo, setTodo] = useState(null)
 
   function deleteTodo(id) {
     fetch(`/api/todos/${id}`, { method: "delete" })
@@ -48,7 +54,6 @@ function App() {
             }
           }
         } else {
-          console.log(data[i][key])
           if (data[i][key].toLowerCase().includes(filteredStr)) {
             filterdTodo.push(data[i])
             break;
@@ -70,6 +75,7 @@ function App() {
       })
     })
   }
+
 
   // coverting the tags array into antd filter format
   const tagsFilter = onlyTags.map(tag => {
@@ -169,6 +175,7 @@ function App() {
               className='edit-btn'
               key={`edit-${id}`}
               id={`edit-${id}`}
+              onClick={() => handleEdit(id)}
             >
               Edit
             </button>
@@ -191,15 +198,184 @@ function App() {
     setFilterVal(e.target.value)
   }
 
+  function handleForm(e) {
+    const { name, value } = e.target
+    if (setIsEditClicked) {
+      setTodo(todo => {
+        return {
+          ...todo,
+          [name]: [name] === "tags" ? todo.tags.join(",") : value
+
+        }
+      })
+    }
+    else {
+      setTodo(todo => {
+        return {
+          ...todo,
+          id: id,
+          [name]: value
+        }
+      })
+    }
+
+  }
+  function handleAddBtn() {
+    setTodoClicked(true)
+    setTodo({
+      id: id,
+      title: "",
+      timeStamp: dt,
+      description: "",
+      dueDate: "",
+      tags: "",
+      status: ""
+    })
+  }
+  function handleEdit(id) {
+    setIsEditClicked(true)
+    setTodoClicked(true)
+    let editTodo = data.filter(todo => todo.id === id)
+    setTodo(...editTodo)
+  }
+
+  function handleDone() {
+    if (todo.title && todo.description && todo.status) {
+      todo.tags = todo.tags.length ? todo.tags.split(",") : []
+      setTodo(todo => {
+        return {
+          ...todo,
+          tags: todo.tags
+        }
+      })
+      if (isEditClicked) {
+        setData(data => {
+          let newArr = [...data]
+          for (let i = 0; i < newArr.length; i++) {
+            if (newArr[i].id === todo.id) {
+              newArr[i] = { ...todo }
+            }
+          }
+          return newArr
+        })
+      }
+
+      else {
+        fetch(`/api/todos`, { method: "POST", body: JSON.stringify(todo) })
+          .then(res => res.json())
+          .then(data => {
+            setData(data => {
+              return [
+                ...data,
+                todo
+              ]
+            })
+          })
+        setId(data.length + 1)
+      }
+      setTodoClicked(false)
+      setIsEditClicked(false)
+    }
+  }
+
+  function handleFormCloseBtn() {
+    setTodoClicked(false)
+    setIsEditClicked(false)
+  }
+
   return (
     <>
-      <Search
-        className='search'
-        placeholder="input search text"
-        allowClear
-        size="large"
-        onChange={handleFilterVal}
-      />
+      {todoClicked &&
+        <div className='form-container'>
+          <form>
+            <h2>{isEditClicked ? "Edit" : "Add"} Todo Item </h2>
+            <input
+              type="text"
+              name="title"
+              id="title"
+              placeholder='Title'
+              onChange={handleForm}
+              value={todo.title}
+            />
+            <input
+              type="text"
+              name="description"
+              id="description"
+              placeholder="Todo description"
+              onChange={handleForm}
+              value={todo.description} />
+            <input
+              type="date"
+              name="dueDate"
+              id="dueDate"
+              value={todo.dueDate}
+              onChange={handleForm}
+              placeholder='due date' />
+            <input
+              type="text"
+              name="tags"
+              id="tags"
+              value={todo.tags}
+              onChange={handleForm}
+              placeholder='Eg: marketing, finance' />
+            <div className='status-container'>
+              <h3>Status:</h3>
+              <input
+                type="radio"
+                name="status"
+                id="open"
+                value="Open"
+                onChange={handleForm}
+                checked={todo.status === "Open"}
+              />
+              <label for="open">Open</label> <br />
+              <input
+                type="radio"
+                name="status"
+                id="close"
+                value="Close"
+                onChange={handleForm}
+                checked={todo.status === "Close"}
+              />
+              <label for="close">Close</label> <br />
+              <input
+                type="radio"
+                name="status"
+                id="working"
+                value="Working"
+                checked={todo.status === "Working"}
+                onChange={handleForm}
+              />
+              <label for="working">Working</label> <br />
+              <input
+                type="radio"
+                name="status"
+                id="overdue"
+                value="Overdue"
+                onChange={handleForm}
+                checked={todo.status === "Overdue"}
+              />
+              <label for="overdue">Overdue</label> <br />
+            </div>
+            <div className='form-btns'>
+              <button type='button' id="form-done" onClick={handleDone}>Done</button>
+              <button type='button' id="form-close" onClick={handleFormCloseBtn}>Close</button>
+            </div>
+
+
+          </form>
+        </div>
+      }
+      <header>
+        <button className='add' id='add' onClick={handleAddBtn}>Add Todo + </button>
+        <Search
+          className='search'
+          placeholder="input search text"
+          allowClear
+          size="large"
+          onChange={handleFilterVal}
+        />
+      </header>
       <Table dataSource={visibleData} columns={columns} rowKey={"id"} />
     </>
 

@@ -201,6 +201,7 @@ let todos = [
 ]
 
 export default function () {
+    let newId = 20
     createServer({
         models: {
             todos: Model,
@@ -219,6 +220,18 @@ export default function () {
                 return {
                     todos: schema.todos.all().models
                 }
+
+            }),
+
+                this.post("/todos", (schema, request) => {
+                    console.log("schema: ", schema, "req: ", request)
+                    let attrs = JSON.parse(request.requestBody)
+                    attrs.id = newId++
+                    todos.push(attrs)
+
+                    return { reminder: attrs }
+                })
+
             })
 
             this.delete("/todos/:id", (schema, request) => {
@@ -228,4 +241,3 @@ export default function () {
         }
     })
 }
-
