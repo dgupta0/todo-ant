@@ -25,6 +25,8 @@ function App() {
   const [modalOpened, setModalOpened] = useState(false);
   const [form] = Form.useForm();
   const [formLoading, setFormLoading] = useState(false);
+  const [formFields, setFormFields] = useState(null);
+  const [formName, setFormName] = useState("create");
   const [action, setAction] = useState({
     id: null,
     state: null,
@@ -88,15 +90,37 @@ function App() {
     : [];
 
   function handleCreateClick() {
+    setFormName("create");
     setModalOpened(true);
   }
 
   function handleModalCancel() {
     setModalOpened(false);
+    form.resetFields();
   }
 
   function handleEditClick(id) {
-    console.log("edit: " + id);
+    const fieldData = [];
+
+    let todo = todos.find(todo => todo.id === id);
+
+    todo = {
+      ...todo,
+      remember: true,
+      dateRange: [dayjs(todo.timeStamp), todo.dueDate !== "" ? dayjs(todo.dueDate) : null],
+      tags: todo.tags.map(tag => "#" + tag).join(" ") ?? "",
+    }
+
+    for (const key in todo) {
+      fieldData.push({
+        name: [key],
+        value: todo[key]
+      });
+    }
+
+    setFormFields(fieldData);
+    setFormName("update");
+    setModalOpened(true);
   }
 
   function handleDeleteClick(id) {
@@ -235,6 +259,11 @@ function App() {
     },
   ];
 
+  /* 
+  TODO:
+  Create new two functions, createTodo and updateTodo so when
+  onFinish => if formName = create -> createTodo(), if formName = update -> updateTodo()  
+  */
   const onFinish = async ({ title, description, tags, status, dateRange }) => {
     const todo = {
       title,
@@ -251,28 +280,43 @@ function App() {
     todo.timeStamp = dateRange[0].format("YYYY-MM-DD");
     todo.dueDate = dateRange[1]?.format("YYYY-MM-DD") ?? "";
 
-    console.log(todo);
+    todo.id = form.getFieldValue("id") ?? "";
+
+    const method = formName === "create" ? "POST" : "PUT";
+    const path = formName === "create" ? "/api/todos" : "/api/todos/" + todo.id;
 
     const options = {
-      method: "POST",
+      method: method,
       body: JSON.stringify(todo),
     };
 
     setFormLoading(true);
 
-    const response = await fetch("/api/todos", options);
+    const response = await fetch(path, options);
 
     if (response.ok) {
-      form.resetFields();
-
       const newTodo = await response.json();
 
-      setTodos((prevTodos) => ([
-        ...prevTodos,
-        newTodo,
-      ]));
+      if (method === "POST") {
+        form.resetFields();
+        setTodos((prevTodos) => ([
+          ...prevTodos,
+          newTodo,
+        ]));
+      } else {
+        setTodos(prevTodos => {
+          const updatedTodos = [...prevTodos];
+          const updatingTodo = updatedTodos.find(t => t.id === todo.id);
+          for (const key in newTodo) {
+            updatingTodo[key] = newTodo[key];
+          }
+          return updatedTodos;
+        })
+      }
+
+
     } else {
-      console.log("ERROR POSTING TODO");
+      console.log(`Error while ${method} ${path}.`);
     }
 
     setFormLoading(false);
@@ -308,6 +352,13 @@ function App() {
         <Space direction="vertical" align="center">
           <Form
             form={form}
+            fields={formFields}
+            disabled={formLoading}
+            initialValues={{
+              remember: true,
+              dateRange: [dayjs(), null],
+              status: "Open",
+            }}
             name="create"
             labelCol={{
               span: 8,
@@ -317,11 +368,6 @@ function App() {
             }}
             style={{
               width: "100%",
-            }}
-            initialValues={{
-              remember: true,
-              dateRange: [dayjs(), null],
-              status: "Open",
             }}
             autoComplete="off"
             onFinish={onFinish}
@@ -368,16 +414,9 @@ function App() {
               />
             </Form.Item>
 
-            <Form.Item
-              wrapperCol={{
-                offset: 8,
-                span: 16,
-              }}
-            ></Form.Item>
-
             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
               <Button type="primary" htmlType="submit" loading={formLoading}>
-                Create
+                {formName.toUpperCase()}
               </Button>
             </Form.Item>
           </Form>

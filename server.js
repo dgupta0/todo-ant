@@ -6,7 +6,7 @@ export default function () {
 
   createServer({
     models: {
-      todos: Model,
+      todo: Model,
     },
 
     seeds(server) {
@@ -50,7 +50,13 @@ export default function () {
         }
 
         return new Response(200, {}, todo);
-      });
+      }, { timing: 2000 });
+
+      this.put("/todos/:id", (schema, request) => {
+        const todo = JSON.parse(request.requestBody);
+        schema.todos.find(todo.id).update(todo);
+        return todo;
+      })
     },
   });
 }
